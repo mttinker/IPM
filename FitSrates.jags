@@ -91,7 +91,7 @@ for (i in 1:Nareas){
 		Sx[5,i,j] <-  exp(-zeta[1]*exp(zeta[2]*pK[i,j] + zeta[6] + eps[i,j]))
 		Sx[6,i,j] <-  exp(-zeta[1]*exp(zeta[2]*pK[i,j] + zeta[4] + zeta[6] + eps[i,j]))	
 		# Estimate approximate lamba based on adult female survival
-		lm[i,j] <- max(.5,min(1.25,-1.588 + 2.813*Sx[2,i,j]))
+		lm[i,j] <- max(.5,min(1.25,-1.06 + 2.3*Sx[2,i,j]))
 		ssd[i,j] <- ifelse(lm[i,j]<.5,1,2)   # Determine appropriate ssd based on lambda
 		gf1[i,j] <- (min(.999,Sx[1,i,j]/lm[i,j])^Dur[1] - min(.999,Sx[1,i,j]/lm[i,j])^(Dur[1]-1))/(min(.999,Sx[1,i,j]/lm[i,j])^Dur[1] -1)
 		gm1[i,j] <- (min(.999,Sx[4,i,j]/lm[i,j])^Dur[1] - min(.999,Sx[4,i,j]/lm[i,j])^(Dur[1]-1))/(min(.999,Sx[4,i,j]/lm[i,j])^Dur[1] -1)

@@ -61,8 +61,8 @@ Warea = dfWr$Area
 Wyear = dfWr$Year - MinYr + 1
 #
 # Create dummy pop vectors corresponding to ssd for low and high densities
-n1 = matrix(c(225, 214,  72, 224, 207,  58,
-              209, 233,  94, 207, 206,  51),
+n1 = matrix(c(235, 226,  66, 230, 200,  43,
+              228, 246,  76, 219, 194,  37),
             byrow=T,ncol=6)
 n1 = t(n1)
 # Set up Jags inputs -----------------------------------------------------
@@ -110,30 +110,58 @@ vn = varnames(out[["mcmc"]])
 Nsims = length(as.matrix(mcmc)[,1])
 sumstats = summary(out)
 
-save.image(file="../Results/FitSrates_Results_1.rdata")
-
 plot(out, vars = "sig", plot.type = c("trace", "histogram"),
      layout = c(1,2))
 plot(out, vars = "rho", plot.type = c("trace", "histogram"),
      layout = c(1,2))
 plot(out, vars = "zeta", plot.type = c("trace", "histogram"),
-     layout = c(1,2))
-
-S1 = 
-
-for (i in 1:(Nareas-1){
+          layout = c(1,2))
+BR = numeric(); Dur = numeric()
+Dur[1] <- 3      # Stage duration for sub-adult 
+Dur[2] <- 7      # Stage duration for adult
+BR[1] <- .98     # Birth rate for adults
+BR[2] <- .85     # Birth rate for aged-adults
+pupDbase <- .15  # Base hazards for pups (as inst./ death rate), low pop densities
+#
+S1lg_m = matrix(nrow=5,ncol = Nyrs)
+S2lg_m = matrix(nrow=5,ncol = Nyrs)
+S3lg_m = matrix(nrow=5,ncol = Nyrs)
+S4lg_m = matrix(nrow=5,ncol = Nyrs)
+S5lg_m = matrix(nrow=5,ncol = Nyrs)
+S6lg_m = matrix(nrow=5,ncol = Nyrs)
+Wrlg_m = matrix(nrow=5,ncol = Nyrs)
+S1lg_s = matrix(nrow=5,ncol = Nyrs)
+S2lg_s = matrix(nrow=5,ncol = Nyrs)
+S3lg_s = matrix(nrow=5,ncol = Nyrs)
+S4lg_s = matrix(nrow=5,ncol = Nyrs)
+S5lg_s = matrix(nrow=5,ncol = Nyrs)
+S6lg_s = matrix(nrow=5,ncol = Nyrs)
+Wrlg_s = matrix(nrow=5,ncol = Nyrs)
+for (i in 1:(Nareas-1)){
   for (j in 1:Nyrs){
-    eps[i,j] ~ dnorm(0,tauS)
-    Wr[i,j] <- exp(-pupDbase*exp(rho*pK[i,j] + eps[i,j]))
-    R[1,i,j] <- 0.5*BR[1]*Wr[i,j]
-    R[2,i,j] <- 0.5*BR[2]*Wr[i,j]
-    Sx[1,i,j] <-  exp(-zeta[1]*exp(zeta[2]*pK[i,j] + zeta[3] + eps[i,j]))
-    Sx[2,i,j] <-  exp(-zeta[1]*exp(zeta[2]*pK[i,j] + eps[i,j]))
-    Sx[3,i,j] <-  exp(-zeta[1]*exp(zeta[2]*pK[i,j] + zeta[4] + eps[i,j]))
-    Sx[4,i,j] <-  exp(-zeta[1]*exp(zeta[2]*pK[i,j] + zeta[3] + zeta[5] + eps[i,j]))
-    Sx[5,i,j] <-  exp(-zeta[1]*exp(zeta[2]*pK[i,j] + zeta[6] + eps[i,j]))
-    Sx[6,i,j] <-  exp(-zeta[1]*exp(zeta[2]*pK[i,j] + zeta[4] + zeta[6] + eps[i,j]))	
+    eps = as.matrix(mcmc)[,which(vn==paste0("eps[",i,",",j,"]"))]
+    zeta = as.matrix(mcmc)[,which(startsWith(vn,"zeta"))]
+    rho =  as.matrix(mcmc)[,which(startsWith(vn,"rho"))]
+    Wr = exp(-pupDbase*exp(rho*pK[i,j] + eps))
+    S1 =  exp(-zeta[,1]*exp(zeta[,2]*pK[i,j] + zeta[,3] + eps))
+    S2 =  exp(-zeta[,1]*exp(zeta[,2]*pK[i,j] + eps))
+    S3 =  exp(-zeta[,1]*exp(zeta[,2]*pK[i,j] + zeta[,4] + eps))
+    S4 =  exp(-zeta[,1]*exp(zeta[,2]*pK[i,j] + zeta[,3] + zeta[,5] + eps))
+    S5 =  exp(-zeta[,1]*exp(zeta[,2]*pK[i,j] + zeta[,6] + eps))
+    S6 =  exp(-zeta[,1]*exp(zeta[,2]*pK[i,j] + zeta[,4] + zeta[,6] + eps))	
+    Wrlg_m[i,j] = mean(logit(Wr)); Wrlg_s[i,j] = sd(logit(Wr))
+    S1lg_m[i,j] = mean(logit(S1)); S1lg_s[i,j] = sd(logit(S1))
+    S2lg_m[i,j] = mean(logit(S2)); S2lg_s[i,j] = sd(logit(S2))
+    S3lg_m[i,j] = mean(logit(S3)); S3lg_s[i,j] = sd(logit(S3))
+    S4lg_m[i,j] = mean(logit(S4)); S4lg_s[i,j] = sd(logit(S4))
+    S5lg_m[i,j] = mean(logit(S5)); S5lg_s[i,j] = sd(logit(S5))
+    S6lg_m[i,j] = mean(logit(S6)); S6lg_s[i,j] = sd(logit(S6))
   }
 }
-    
 
+VRmats = list(Wrlg_m=Wrlg_m,Wrlg_s=Wrlg_s,S1lg_m=S1lg_m,S1lg_s=S1lg_s,
+              S2lg_m=S2lg_m,S2lg_s=S2lg_s,S3lg_m=S3lg_m,S3lg_s=S3lg_s,
+              S4lg_m=S4lg_m,S4lg_s=S4lg_s,S5lg_m=S5lg_m,S5lg_s=S5lg_s,
+              S6lg_m=S6lg_m,S6lg_s=S6lg_s)  
+save(VRmats,file="../Data/Vrates_est.rdata")
+save.image(file="../Results/FitSrates_Results_1.rdata")

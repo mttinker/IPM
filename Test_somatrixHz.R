@@ -2,13 +2,14 @@
 require(ggplot2)
 source("somatrixHz.R")
 #
-dns = seq(.05,1.05,by = .05)
+dns = c(.01,seq(.05,1.05,by = .05))
 Ndns = length(dns)
 AFmS = numeric()
 JFmS = numeric()
 PupS = numeric()
 lams = numeric()
 SSD = matrix(nrow=6,ncol=Ndns)
+sig = .35
 for (d in 1:Ndns){
   PrpK = dns[d]
   rslt = somatrixHz(PrpK,0) # no stochasticity 
@@ -31,7 +32,7 @@ plt1 = (ggplot(df, aes(x= Density))+
           ggtitle("Density-dependent variation in vital rates, proportional hazards model")+
           scale_colour_discrete(name="Vital rates: ",
                                 breaks=c("Survive_AF", "Survive_JF", "WeanRate"),
-                                labels=c("Adult female survival", "Juvenile female survival", 
+                                labels=c("Adult female survival", "Subadult female survival", 
                                          "Wean success rate")) +
           theme(legend.position="bottom"))
 print(plt1)
@@ -44,3 +45,10 @@ plt2 = (ggplot(df, aes(x= Density,y=Lambda))+
 print(plt2)
 
 summary(lm(lams ~ AFmS))
+
+lamvar = numeric()
+for (i in 1:1000){
+  rslt = somatrixHz(1,sig) # with stochasticity 
+  lamvar[i] = rslt$lam
+}
+boxplot(lamvar,ylab="Lambda",main = "Lambda at K with Environmental Stochasticity")
