@@ -35,6 +35,7 @@ somatrixHz <- function(pK,sigma){
   }else{
     eps = rnorm(1,0,sigma) # env. stochasticity
   }
+  zeta = numeric()
   # Zeta parameters for survival proportional hazards function (log hazards)
   zeta[1] = .01  # Base hazards (adult female), as instantaneous death rate 
   zeta[2] = 2.1	# log haz ratio, density-dependent hazards (multiplied by prpn K)
