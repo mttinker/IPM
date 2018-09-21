@@ -1,4 +1,4 @@
- # Fit Survival rates
+# Fit Survival rates
 require(runjags)
 require(parallel)
 require(gtools)
@@ -75,7 +75,6 @@ jags.data <- list(Nareas=Nareas,Nyrs=Nyrs,LogLam=LogLam,Asrv=Asrv,
                   Sstage=Sstage,Sarea=Sarea,Syear=Syear,
                   NWrEst=NWrEst,WrEst=WrEst,tauEWr=tauEWr,
                   Warea=Warea,Wyear=Wyear,n1=n1,pK=pK)
-#                  Kguess=Kguess,NKguess=NKguess,tauKg=tauKg 
 #
 inits <- function() list(sigS=runif(1, .1, .5))
 # sigK=runif(1, .1, .5),
