@@ -36,18 +36,18 @@ somatrixHz <- function(pK,sigma){
     eps = max(-.5,min(.5,rnorm(1,0,sigma))) # env. stochasticity
   }
   # Rho parameter, pup survival proportional hazards function (log hazards)
-  rho = 1.1482881         # log haz ratio, density-dependent hazards for pups (multiplied by prpn K) 
+  rho = 1.1977000         # log haz ratio, density-dependent hazards for pups (multiplied by prpn K) 
   zeta = numeric()
   # Zeta parameters for survival proportional hazards function (log hazards)
-  zeta[1] = 0.0312688  # Base hazards (adult female), as instantaneous death rate 
-  zeta[2] = 1.2023682	# log haz ratio, density-dependent hazards (multiplied by prpn K)
-  zeta[3] = 0.4569099  # log haz ratio, for juveniles/sub-adults relative to adults 
-  zeta[4] = 1.0864169  # log haz ratio, for aged adults relative to adults
-  zeta[5] = 0.3289521    # Log haz ratio for sub-adult males relative to sub-adult females
-  zeta[6] = 0.4188282    # Log haz ratio for adult males relative to adult females
+  zeta[1] = 0.0333889  # Base hazards (adult female), as instantaneous death rate 
+  zeta[2] = 1.1196000	# log haz ratio, density-dependent hazards (multiplied by prpn K)
+  zeta[3] = 0.4867950  # log haz ratio, for juveniles/sub-adults relative to adults 
+  zeta[4] = 1.0780650  # log haz ratio, for aged adults relative to adults
+  zeta[5] = 0.3599980    # Log haz ratio for sub-adult males relative to sub-adult females
+  zeta[6] = 0.4660775    # Log haz ratio for adult males relative to adult females
   pupDbase = .15  # Base hazards for pups (as inst./ death rate), low pop densities
   BR = c(.98,.85) # Birth rates for adults and aged-adults
-  wr = exp(-pupDbase*exp(rho*pK + eps))
+  wr = exp(-pupDbase*exp(rho*pK + 0.5*eps))
   Rad = 0.5*BR[1]*wr
   Raa = 0.5*BR[2]*wr
   fsSA = exp(-zeta[1]*exp(zeta[2]*pK + zeta[3] + eps))
@@ -57,7 +57,9 @@ somatrixHz <- function(pK,sigma){
   msA = exp(-zeta[1]*exp(zeta[2]*pK + zeta[6] + eps))
   msAA = exp(-zeta[1]*exp(zeta[2]*pK + zeta[4] + zeta[6] + eps))
   Dur = c(3,7) # stage durations for sub-adult and adult
-  lm = max(.5,min(1.25,-1.06 + 2.3*fsA)); # Initial lambda estimate 
+  lmfxnP1 = -1.16
+  lmfxnP2 = 2.4
+  lm = max(.5,min(1.25,lmfxnP1 + lmfxnP2*fsA)); # Initial lambda estimate 
   # Parameterize matrix and solve (use iterations to stabalize lambda)
   for (i in 1:3){
     gf1 = (min(.999,fsSA/lm)^Dur[1] - min(.999,fsSA/lm)^(Dur[1]-1))/(min(.999,fsSA/lm)^Dur[1] -1)

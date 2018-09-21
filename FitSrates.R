@@ -142,7 +142,7 @@ for (i in 1:(Nareas-1)){
     eps = as.matrix(mcmc)[,which(vn==paste0("eps[",i,",",j,"]"))]
     zeta = as.matrix(mcmc)[,which(startsWith(vn,"zeta"))]
     rho =  as.matrix(mcmc)[,which(startsWith(vn,"rho"))]
-    Wr = exp(-pupDbase*exp(rho*pK[i,j] + eps))
+    Wr = exp(-pupDbase*exp(rho*pK[i,j] + 0.5*eps))
     S1 =  exp(-zeta[,1]*exp(zeta[,2]*pK[i,j] + zeta[,3] + eps))
     S2 =  exp(-zeta[,1]*exp(zeta[,2]*pK[i,j] + eps))
     S3 =  exp(-zeta[,1]*exp(zeta[,2]*pK[i,j] + zeta[,4] + eps))
@@ -158,10 +158,23 @@ for (i in 1:(Nareas-1)){
     S6lg_m[i,j] = mean(logit(S6)); S6lg_s[i,j] = sd(logit(S6))
   }
 }
-
 VRmats = list(Wrlg_m=Wrlg_m,Wrlg_s=Wrlg_s,S1lg_m=S1lg_m,S1lg_s=S1lg_s,
               S2lg_m=S2lg_m,S2lg_s=S2lg_s,S3lg_m=S3lg_m,S3lg_s=S3lg_s,
               S4lg_m=S4lg_m,S4lg_s=S4lg_s,S5lg_m=S5lg_m,S5lg_s=S5lg_s,
               S6lg_m=S6lg_m,S6lg_s=S6lg_s)  
 save(VRmats,file="../Data/Vrates_est.rdata")
-save.image(file="../Results/FitSrates_Results_1.rdata")
+save.image(file="../Results/FitSrates_Results_2.rdata")
+
+df = data.frame(Proportion_K = as.numeric(pK[1:5,]), Logit_AdFemSx = as.numeric(S2lg_m),
+                Logit_SubAdFemSx = as.numeric(S1lg_m),Logit_WeanRate = as.numeric(Wrlg_m))
+plt1 = ggplot(df, aes(x = Proportion_K, y = Logit_AdFemSx)) + 
+  geom_point() +
+  stat_smooth(method = "lm", col = "red") +
+  ggtitle("Female Survival vs Density Relative to K")
+print(plt1)
+plt2 = ggplot(df, aes(x = Proportion_K, y = Logit_WeanRate)) + 
+  geom_point() +
+  stat_smooth(method = "lm", col = "red") +
+  ggtitle("Wean Success vs Density Relative to K")
+print(plt2)
+

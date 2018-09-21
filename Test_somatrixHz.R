@@ -44,11 +44,25 @@ plt2 = (ggplot(df, aes(x= Density,y=Lambda))+
           ggtitle("Density-dependent variation in population growth, proportional hazards model"))  
 print(plt2)
 
-summary(lm(lams ~ AFmS))
+print("Linear function of Lambda ~ Adult female survival:")
+print(summary(lm(lams ~ AFmS)))
 
+if (sig>0){
 lamvar = numeric()
-for (i in 1:1000){
+vrates = matrix(nrow=1000,ncol = 7)
+for (i in 1:10000){
   rslt = somatrixHz(1,sig) # with stochasticity 
   lamvar[i] = rslt$lam
+  vrates[i,] = as.numeric(rslt$vrts)
 }
+ 
 boxplot(lamvar,ylab="Lambda",main = "Lambda at K with Environmental Stochasticity")
+labels = c("Pups","Subadult Fem","Adult Fem","Aged-adl Fem",
+                                  "Subadult Male","Adult Male","Aged-adl Male")
+boxplot(vrates,ylab="Annual Survival Rates",main = "Vital rates at K with Environmental Stochasticity",
+        xlab="",xaxt="n",col = "lightgray")
+axis(1, labels = FALSE)
+text(x =  seq_along(labels), y = par("usr")[3] - .02, srt = 45, adj = 1,
+     labels = labels, xpd = TRUE)
+print(paste0("Geometric mean lambda = ",exp(mean(log(lamvar)))))
+}
