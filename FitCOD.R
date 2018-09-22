@@ -60,6 +60,9 @@ for (i in 1:Nareas){
     }
   }
 }
+Stagefilter = matrix(1,nrow=Ncod,ncol = Nstage)
+Stagefilter[2,1] = 0; Stagefilter[2,4:6] = 0 
+
 #
 # Set up Jags inputs -----------------------------------------------------
 #
@@ -70,10 +73,12 @@ jags.data <- list(Nareas=Nareas,Nyrs=Nyrs,Nstage=Nstage,Nqtr=Nqtr,
                   Casedist=Casedist,Cstage=Cstage,Carea=Carea,
                   Cyear=Cyear,Cqtr=Cqtr,ncase=ncase,
                   Slg=Slg,Sstage=Sstage,Sarea=Sarea,
-                  Syear=Syear,tauS=tauS,pK=pK)
+                  Syear=Syear,tauS=tauS,pK=pK,
+                  Stagefilter=Stagefilter)
 #
-inits <- function() list(sigQ=runif(1, .1, .5))
-params <- c("sigQ","sigZA","sigZY","phi","B","Q","Zmn","Z") # 
+inits <- function() list(sigQ=runif(1, .1, .5),
+                         sigA=runif(1, .1, .4),sigT=runif(1, .02, .08))
+params <- c("sigQ","sigA","sigT","phi","B","Q","Zmn","Z") # 
 #
 nsamples <- 1000
 nthin <- 10
@@ -106,4 +111,24 @@ sumstats = summary(out)
 
 plot(out, vars = "sig", plot.type = c("trace", "histogram"),
      layout = c(1,2))
-  
+plot(out, vars = "phi", plot.type = c("trace", "histogram"),
+     layout = c(1,2))
+# plot(out, vars = "B", plot.type = c("trace", "histogram"),
+#      layout = c(1,2))
+#   
+Femmort = matrix(nrow = 5000,ncol = Ncod)
+randsamp = sample(Nsims,5000)
+for (i in 1:Ncod){
+  tmp1=as.matrix(mcmc)[randsamp,which(vn==paste0("B[",i,",",2,"]"))]
+  tmp2=as.matrix(mcmc)[randsamp,which(vn==paste0("phi[",i,"]"))]
+  Femmort[,i] = exp(tmp1+tmp2*.90)
+}
+boxplot(Femmort,ylab="Log Hazard ratio",
+        main = "Relative Impacts of COD, Adult Females, 90% K",
+        xlab="",xaxt="n",col = "lightgray",outline=FALSE)
+axis(1, labels = FALSE)
+text(x =  seq_along(CODdefs$COD_Group), y = par("usr")[3] - .02, srt = 45, adj = 1,
+     labels = CODdefs$COD_Group, xpd = TRUE)
+
+
+save.image(file="../Results/FitCOD_Results_2.rdata")

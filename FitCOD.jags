@@ -21,7 +21,7 @@ for (a in 1:Nareas){
 			for (q in 1:Nqtr){	
 				for (x in 1:Ncod){		
 					gam[x,i,a,y,q] <- exp(B[x,i] + phi[x]*pK[a,y])*exp(Z[x,a,y]+Q[x,q]) 
-					h[x,i,a,y,q] <- exp(gam[x,i,a,y,q] + gam0)
+					h[x,i,a,y,q] <- exp(gam[x,i,a,y,q]*Stagefilter[x,i] + gam0)
 					delta[x,i,a,y,q] <- (h[x,i,a,y,q] - h0)/(UCH[i,a,y,q] - Ncod*h0)
 				}
 				UCH[i,a,y,q] <- sum(h[1:Ncod,i,a,y,q])
@@ -37,27 +37,26 @@ for (a in 1:Nareas){
 for (x in 1:Ncod){
 	phi[x] ~ dt(0, 1/2.5^2 ,1)   # density-dependent effect, allows hazard to increase or decrease with ppn K
 	for (i in 1:Nstage){
-		B[x,i] ~ dt(0, 1/2.5^2 ,1) # Magnitude of effect of hazard x on stage i (log of log hazards)		
+		Beta[x,i] ~ dt(0, 1/2.5^2 ,1) T(-10,10)# Magnitude of effect of hazard x on stage i (log of log hazards)		
+		B[x,i] <- Beta[x,i]*Stagefilter[x,i]
 	}
 	for (a in 1:Nareas){
-		Zmn[x,a] ~ dnorm(0,tauZA[x])
+		Zmn[x,a] ~ dnorm(0,tauA)
 		for (y in 1:Nyrs){
 			# Z random effect, describes var of relative magnitude of hazard over space and time
-			Z[x,a,y] ~ dnorm(Zmn[x,a],tauZY[x])
+			Z[x,a,y] ~ dnorm(Zmn[x,a],tauT)
 		}
 	}
 	for (q in 1:Nqtr){
 		Q[x,q] ~ dnorm(0,tauQ)
 	}
-	# Variance params: var in relative freq of cause-specific risks
-	# NOTE: could merge temporal and spatial var into one var param
-	sigZA[x] ~ dt(0, 1/2.5^2 ,1) T(0,) # spatial variance in relative freq of cause-specific risk
-	tauZA[x] <- pow(sigZA[x],-2)
-	sigZY[x] ~ dt(0, 1/2.5^2 ,1) T(0,) # temporal variance in relative freq of cause-specific risk
-	tauZY[x] <- pow(sigZY[x],-2)
 }
-sigQ ~ dt(0, 1/2.5^2 ,1) T(0,) # variance in relative frequency of COD by season
+sigQ ~ dt(0, 1/1^2 ,1) T(0,) # variance in relative frequency of COD by season
 tauQ <- pow(sigQ,-2)
+sigA ~ dt(0, 1/1^2 ,1) T(0,) # variance in relative frequency of COD by area
+tauA <- pow(sigA,-2)
+sigT ~ dt(0, 1/1^2 ,1) T(0,) # variance in relative frequency of COD by season
+tauT <- pow(sigT,-2)
 #
 # Some nuiscense params
 h0 <- 0.0005
