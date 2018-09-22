@@ -116,8 +116,9 @@ plot(out, vars = "phi", plot.type = c("trace", "histogram"),
 # plot(out, vars = "B", plot.type = c("trace", "histogram"),
 #      layout = c(1,2))
 #   
-Femmort = matrix(nrow = 5000,ncol = Ncod)
-randsamp = sample(Nsims,5000)
+Nrandsamp = 5000
+randsamp = sample(Nsims,Nrandsamp)
+Femmort = matrix(nrow = Nrandsamp,ncol = Ncod)
 for (i in 1:Ncod){
   tmp1=as.matrix(mcmc)[randsamp,which(vn==paste0("B[",i,",",2,"]"))]
   tmp2=as.matrix(mcmc)[randsamp,which(vn==paste0("phi[",i,"]"))]
@@ -130,5 +131,5 @@ axis(1, labels = FALSE)
 text(x =  seq_along(CODdefs$COD_Group), y = par("usr")[3] - .02, srt = 45, adj = 1,
      labels = CODdefs$COD_Group, xpd = TRUE)
 
-
+rm(Femmort)
 save.image(file="../Results/FitCOD_Results_2.rdata")
