@@ -1,16 +1,17 @@
 # Model to fit cause-specific mortality using proportional hazards approach, 
-# using observed data of necropsy analyses of stranded carcasses and annual
+# observed data sets: necropsy analyses of ~ 600 stranded carcasses and annual
 # estimates of age/sex specific survival by area and year, 1998-2012
 #
 model{
 # OBSERVED VARIABLES
-# Observed node: case frequency distributions by cause of death
+# Observed node: frequency distributions of carcasses by cause of death
 for (i in 1:Ncasedist){		
-	# Observed node: multinomial distributions of cases
+	# Distributions of cases by COD as multinomial random variable
 	Casedist[i,1:Ncod] ~ dmulti(delta[1:Ncod,Cstage[i],Carea[i],Cyear[i],Cqtr[i]],ncase[i])
 }
 # Observed node: survival rates by stage, area and year
 for (i in 1:NSrates){
+	# logit-transformed survival rate as normal random variable
 	Slg[i] ~ dnorm(logit(S[Sstage[i],Sarea[i],Syear[i]]),tauS[i])
 }
 # LATENT VARIABLES
@@ -33,21 +34,24 @@ for (a in 1:Nareas){
 #
 # FIT PRIORS 
 # (using vague cauchy or half cauchy priors for most params, as per Gelman 2008)
-# Priors for B and phi params, Z and Q matrices, and variance params: 
+# Priors for B and phi params, Z and Q random effect matrices, and variance params: 
 for (x in 1:Ncod){
 	phi[x] ~ dt(0, 1/2.5^2 ,1)   # density-dependent effect, allows hazard to increase or decrease with ppn K
 	for (i in 1:Nstage){
-		Beta[x,i] ~ dt(0, 1/2.5^2 ,1) T(-10,10)# Magnitude of effect of hazard x on stage i (log of log hazards)		
+		Beta[x,i] ~ dt(0, 1/2.5^2 ,1) T(-10,10)# Magnitude of hazard x on stage i (log of log hazards)		
+		# Notes: log of log haz used to ensure realized hazard ratio of a given COD >=1
+		#  "Stagefilter" matrix foreces End Laction hazard to 0 for stages other than reproductive females
 		B[x,i] <- Beta[x,i]*Stagefilter[x,i]
 	}
 	for (a in 1:Nareas){
 		Zmn[x,a] ~ dnorm(0,tauA)
 		for (y in 1:Nyrs){
-			# Z random effect, describes var of relative magnitude of hazard over space and time
+			# Z = random effect matrix, variation in relative magnitude of hazard over space and time
 			Z[x,a,y] ~ dnorm(Zmn[x,a],tauT)
 		}
 	}
 	for (q in 1:Nqtr){
+		# Q = random effect matrix, variation in relative magnitude of hazard by season
 		Q[x,q] ~ dnorm(0,tauQ)
 	}
 }
@@ -58,7 +62,7 @@ tauA <- pow(sigA,-2)
 sigT ~ dt(0, 1/1^2 ,1) T(0,) # variance in relative frequency of COD by season
 tauT <- pow(sigT,-2)
 #
-# Some nuiscense params
+# Some nuiscense params: baseline hazard rate (very low, 99% survival without any other COD)
 h0 <- 0.0005
 gam0 <- log(h0)
 }
