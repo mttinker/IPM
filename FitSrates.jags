@@ -133,6 +133,7 @@ for (i in 1:Nareas){
 		lam[i,j] <- sum(n2[1:6,i,j])/sum(n1[1:6,ssd[i,j]])
 	}
 }	
+# FIT PRIORS 
 # Fit priors (using vague cauchy or half-cauchy priors for most params, as per Gelman 2008)
 # Priors for proportional hazards params: 
 zeta[1] ~ dt(0, 1/.5^2 ,1) T(0,5) # Base hazards (adult female), as instantaneous death rate 

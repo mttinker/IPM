@@ -1,6 +1,6 @@
-# Model to fit cause-specific mortality using proportional hazards approach, 
-# observed data sets: necropsy analyses of ~ 600 stranded carcasses and annual
-# estimates of age/sex specific survival by area and year, 1998-2012
+# Model to fit cause-specific mortality using a competing hazards formulation. 
+# Observed data sets: necropsy analyses of ~ 600 stranded carcasses, and annual
+# estimates of age/sex-specific survival by area and year, 1998-2012
 #
 model{
 # OBSERVED VARIABLES
@@ -21,7 +21,7 @@ for (a in 1:Nareas){
 		for (i in 1:Nstage){
 			for (q in 1:Nqtr){	
 				for (x in 1:Ncod){		
-					gam[x,i,a,y,q] <- exp(B[x,i] + phi[x]*pK[a,y])*exp(Z[x,a,y]+Q[x,q]) 
+					gam[x,i,a,y,q] <- exp(B[x,i] + phi[x]*pK[a,y] + Z[x,a,y]+Q[x,q])
 					h[x,i,a,y,q] <- exp(gam[x,i,a,y,q]*Stagefilter[x,i] + gam0)
 					delta[x,i,a,y,q] <- (h[x,i,a,y,q] - h0)/(UCH[i,a,y,q] - Ncod*h0)
 				}

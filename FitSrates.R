@@ -164,16 +164,25 @@ VRmats = list(Wrlg_m=Wrlg_m,Wrlg_s=Wrlg_s,S1lg_m=S1lg_m,S1lg_s=S1lg_s,
 save(VRmats,file="../Data/Vrates_est.rdata")
 save.image(file="../Results/FitSrates_Results_2.rdata")
 
-df = data.frame(Proportion_K = as.numeric(pK[1:5,]), Logit_AdFemSx = as.numeric(S2lg_m),
-                Logit_SubAdFemSx = as.numeric(S1lg_m),Logit_WeanRate = as.numeric(Wrlg_m))
-plt1 = ggplot(df, aes(x = Proportion_K, y = Logit_AdFemSx)) + 
-  geom_point() +
-  stat_smooth(method = "lm", col = "red") +
-  ggtitle("Female Survival vs Density Relative to K")
+# Zeta proportional hazard parameters -----------------------------------
+Nsimsamp = 1000
+Nsimsamp = sample(Nsims,Nsimsamp)
+Zeta_0 = exp(as.matrix(mcmc)[Nsimsamp,which(vn=="zeta[1]")])
+Zeta_d = exp(as.matrix(mcmc)[Nsimsamp,which(vn=="zeta[2]")])
+Zeta_SA = exp(as.matrix(mcmc)[Nsimsamp,which(vn=="zeta[3]")])
+Zeta_AA = exp(as.matrix(mcmc)[Nsimsamp,which(vn=="zeta[4]")])
+Zeta_m1 = exp(as.matrix(mcmc)[Nsimsamp,which(vn=="zeta[5]")])
+Zeta_m2 = exp(as.matrix(mcmc)[Nsimsamp,which(vn=="zeta[6]")])
+tempmat = cbind(Zeta_0,Zeta_SA,Zeta_AA,Zeta_m1,Zeta_m2,Zeta_d)
+tempdf = as.data.frame(tempmat)
+dfzeta = melt(tempdf)
+rm(tempmat,tempdf)
+plt1 = ggplot(dfzeta, aes(x = variable, y = value)) +
+  geom_violin(fill = "light blue", colour = "black",
+              alpha = 0.7,scale = "width",trim = TRUE) +
+  scale_y_continuous(name = "Parameter Value") +
+  scale_x_discrete(name = "Zeta Parameter") +
+  ggtitle("Posterior distributions, Proportional Hazard (Zeta) Parameters")
 print(plt1)
-plt2 = ggplot(df, aes(x = Proportion_K, y = Logit_WeanRate)) + 
-  geom_point() +
-  stat_smooth(method = "lm", col = "red") +
-  ggtitle("Wean Success vs Density Relative to K")
-print(plt2)
+
 

@@ -22,8 +22,39 @@ Stages = factor(c("Fem_Subadult","Fem_Adult","Fem_AgedAd",
                       "Male_Subadult","Male_Adult","Male_AgedAd"))
 CODnames = factor(CODdefs$COD_Group, levels = CODdefs$COD_Group)
 # 
-# Impacts of COD by stage ---------------------------------------------
+# Survival vs density-----------------------------------------------
 
+df_Slg = data.frame(Proportion_K = as.numeric(pK[1:5,]), Logit_AdFemSx = as.numeric(VRmats$S2lg_m),
+                Logit_SubAdFemSx = as.numeric(VRmats$S1lg_m),Logit_WeanRate = as.numeric(VRmats$Wrlg_m))
+plt1 = ggplot(df_Slg, aes(x = Proportion_K, y = Logit_AdFemSx)) + 
+  geom_point() +
+  stat_smooth(method = "lm", col = "red") +
+  ggtitle("Female Survival vs Density Relative to K")
+print(plt1)
+plt2 = ggplot(df_Slg, aes(x = Proportion_K, y = Logit_WeanRate)) + 
+  geom_point() +
+  stat_smooth(method = "lm", col = "red") +
+  ggtitle("Wean Success vs Density Relative to K")
+print(plt2)
+
+# Violin plot of phi by COD, showing degree of density-dependence------------- 
+tempdf = data.frame(post[,which(vn=="phi[1]")])
+for (i in 2:Ncod){
+  tempdf = cbind(tempdf,data.frame(post[,which(vn==paste0("phi[",i,"]"))]))
+}
+colnames(tempdf) = CODnames
+dfphi = melt(tempdf)
+rm(tempdf)
+plt1 = ggplot(dfphi, aes(x = variable, y = value)) +
+  geom_violin(fill = "light blue", colour = "black",
+              alpha = 0.7,scale = "width",trim = TRUE) +
+  scale_y_continuous(name = "Parameter Value") +
+  scale_x_discrete(name = "Density-dependent variation (phi) by Cause of Death") +
+  ggtitle("Posterior distributions, density-dependent variation (phi) for cause-specific hazards") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+print(plt1)
+
+# Impacts of COD by stage ---------------------------------------------
 #
 tmp1 = data.frame(Stage = rep(Stages,Ncod),
                           Sex = rep(c("F","F","F","M","M","M"),Ncod),
